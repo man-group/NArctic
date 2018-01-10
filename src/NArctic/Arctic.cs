@@ -23,13 +23,12 @@ namespace NArctic
 		protected IMongoCollection<BsonDocument> _segments;
 		protected IMongoCollection<BsonDocument> _version_numbers;
 
-        public static string PREFIX = "arctic_";
         public string Name;
 
 		public Arctic(MongoClient mongo, string lib)
 		{
             string[] items = lib.Split(new[] { '.' }, 2);
-            var db = PREFIX+items[0];
+            var db = items[0];
             this.Mongo = mongo;
             this.Db = mongo.GetDatabase(db);
             var name = items[1];

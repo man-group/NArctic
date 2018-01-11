@@ -185,6 +185,13 @@ namespace NArctic
                         throw new InvalidOperationException();
                     cur.Size = 8;
                 }
+                else if (val == "?")
+                {
+                    cur.Type = typeof(bool);
+                    if(sizeof(bool) != 1)
+                        throw new InvalidOperationException();
+                    cur.Size = 1;
+                }
                 else if (val.ToUpper().Contains("S"))
                 {
                     cur.Type = typeof(string);

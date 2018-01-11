@@ -19,6 +19,14 @@ namespace NArctic.Tests.Unit
         }
 
         [Test]
+        public void ParseBool()
+        {
+            var cur = new DType();
+            int i = new DTypeParser().Parse("'?'", 0, cur);
+            TestBool(cur);
+        }
+
+        [Test]
         public void ParseLEInt()
         {
             var cur = new DType();
@@ -64,6 +72,13 @@ namespace NArctic.Tests.Unit
             Assert.AreEqual(typeof(double), cur.Type);
             Assert.AreEqual(endian, cur.Endian);
             Assert.AreEqual(8, cur.Size);
+        }
+
+        private void TestBool(DType cur)
+        {
+            Assert.IsNotNull(cur);
+            Assert.AreEqual(typeof(bool), cur.Type);
+            Assert.AreEqual(1, cur.Size);
         }
 
         private void TestInt(DType cur, EndianType endian)

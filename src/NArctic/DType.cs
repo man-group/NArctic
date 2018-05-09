@@ -260,22 +260,34 @@ namespace NArctic
 				string str = string.Join(DType.sep, Fields.Select(f=>"('{0}','{1}')".Args(f.Name, f)));
 				return "[" + str + "]";
 			} else {
-                if (Type == typeof(double))
-                    return "<f8";
-                else if (Type == typeof(long))
-                    return "<i8";
-                else if (Type == typeof(int))
-                    return "<i4";
-                else if (Type == typeof(DateTime))
-                    return "<M8[ns]";
-                else if (Type == typeof(bool))
-                    return "?";
-                else if (Type == typeof(string) && EncodingStyle == Encoding.UTF8)
-                    return $"{ToString(Endian)}S{Size}";
-                else if (Type == typeof(string) && EncodingStyle == Encoding.Unicode)
-                    return $"{ToString(Endian)}U{Size}";
+                if (Type == typeof(double)) { return "<f8"; }
+                else if (Type == typeof(long)) { return "<i8"; }
+                else if (Type == typeof(int)) { return "<i4"; }
+                else if (Type == typeof(DateTime)) { return "<M8[ns]"; }
+                else if (Type == typeof(bool)) { return "?"; }
+                else if (Type == typeof(string))
+                {
+                    char encodingChar;
+
+                    if (EncodingStyle == Encoding.UTF8)
+                    {
+                        encodingChar = 'S';
+                    }
+                    else if (EncodingStyle == Encoding.UTF32)
+                    {
+                        encodingChar = 'U';
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException("Unhandled EncodingStyle {1} for numpy dtype '{0}'".Args(Type, EncodingStyle));
+                    }
+
+                    return $"{ToString(Endian)}{encodingChar}{Size}";
+                }
                 else
+                {
                     throw new InvalidOperationException("unknown numpy dtype '{0}'".Args(Type));
+                }
 			}
 				
 		}

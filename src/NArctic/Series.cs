@@ -743,7 +743,7 @@ namespace NArctic
         {
             var data = new string[iheight];
             var dtype = buftype.Fields[icol];
-            buftype.FillDataFromBufferSlow(buf, data, iheight, icol, byteConverter: (b, i, c) => dtype.EncodingStyle.GetString(b, i, c));
+            buftype.FillDataFromBufferSlow(buf, data, iheight, icol, byteConverter: (b, i, c) => dtype.EncodingStyle.GetString(b, i, c)?.TrimEnd('\0'));
             return new Series<string>(data, dtype);
         }
     }

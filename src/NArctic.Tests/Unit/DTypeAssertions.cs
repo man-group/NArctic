@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿using MongoDB.Driver;
+using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,7 +12,7 @@ namespace NArctic.Tests.Unit
     public class DTypeAssertions
     {
         [Test]
-        public void ParseLEFloat()
+        public static void ParseLEFloat()
         {
             var cur = new DType();
             new DTypeParser().Parse("'<f8'", 0, cur);
@@ -19,7 +20,7 @@ namespace NArctic.Tests.Unit
         }
 
         [Test]
-        public void ParseBool()
+        public static void ParseBool()
         {
             var cur = new DType();
             new DTypeParser().Parse("'?'", 0, cur);
@@ -27,7 +28,7 @@ namespace NArctic.Tests.Unit
         }
 
         [Test]
-        public void ParseLEInt()
+        public static void ParseLEInt()
         {
             var cur = new DType();
             new DTypeParser().Parse("'<i4'", 0, cur);
@@ -35,7 +36,7 @@ namespace NArctic.Tests.Unit
         }
 
         [Test]
-        public void ParseLELong()
+        public static void ParseLELong()
         {
             var cur = new DType();
             new DTypeParser().Parse("'<i8'", 0, cur);
@@ -43,7 +44,7 @@ namespace NArctic.Tests.Unit
         }
 
         [Test]
-        public void ParseLEDateTime()
+        public static void ParseLEDateTime()
         {
             var cur = new DType();
             new DTypeParser().Parse("'<M8[ns]'", 0, cur);
@@ -51,7 +52,7 @@ namespace NArctic.Tests.Unit
         }
 
         [Test]
-        public void ParseLEString()
+        public static void ParseNEString()
         {
             var cur = new DType();
             new DTypeParser().Parse("'S32'", 0, cur);
@@ -59,11 +60,19 @@ namespace NArctic.Tests.Unit
         }
 
         [Test]
-        public void ParseLEUnicode()
+        public static void ParseLEUnicode()
         {
             var cur = new DType();
             new DTypeParser().Parse("'<U32'", 0, cur);
-            TestString(cur, EndianType.Little, Encoding.Unicode, 32 * 4);
+            TestString(cur, EndianType.Little, Encoding.UTF32, 32 * 4);
+        }
+
+        [Test]
+        public static void ParseBEUnicode()
+        {
+            var cur = new DType();
+            new DTypeParser().Parse("'<U42'", 0, cur);
+            TestString(cur, EndianType.Little, Encoding.UTF32, 42 * 4);
         }
 
         private static void TestFloat(DType cur, EndianType endian)

@@ -206,7 +206,7 @@ namespace NArctic
                     if (!int.TryParse(val.Remove(0, 2), out int size))
                         throw new InvalidOperationException();
                     cur.Size = size * 4;
-                    cur.EncodingStyle = Encoding.Unicode;
+                    cur.EncodingStyle = new UTF32Encoding(cur.Endian == EndianType.Big, true, false);
                 }
                 else
                     throw new InvalidOperationException("unknown numpy dtype '{0}'".Args(val));

@@ -272,7 +272,7 @@ namespace NArctic
                     return "?";
                 else if (Type == typeof(string) && EncodingStyle == Encoding.UTF8)
                     return $"{ToString(Endian)}S{Size}";
-                else if (Type == typeof(string) && EncodingStyle == Encoding.Unicode)
+                else if (Type == typeof(string) && EncodingStyle == Encoding.UTF32)
                     return $"{ToString(Endian)}U{Size}";
                 else
                     throw new InvalidOperationException("unknown numpy dtype '{0}'".Args(Type));

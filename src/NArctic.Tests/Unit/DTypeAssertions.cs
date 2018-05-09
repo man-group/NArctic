@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿using MongoDB.Driver;
+using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -51,7 +52,7 @@ namespace NArctic.Tests.Unit
         }
 
         [Test]
-        public void ParseLEString()
+        public void ParseNEString()
         {
             var cur = new DType();
             new DTypeParser().Parse("'S32'", 0, cur);
@@ -63,7 +64,15 @@ namespace NArctic.Tests.Unit
         {
             var cur = new DType();
             new DTypeParser().Parse("'<U32'", 0, cur);
-            TestString(cur, EndianType.Little, Encoding.Unicode, 32 * 4);
+            TestString(cur, EndianType.Little, Encoding.UTF32, 32 * 4);
+        }
+
+        [Test]
+        public void ParseBEUnicode()
+        {
+            var cur = new DType();
+            new DTypeParser().Parse("'<U42'", 0, cur);
+            TestString(cur, EndianType.Little, Encoding.UTF32, 42 * 4);
         }
 
         private static void TestFloat(DType cur, EndianType endian)

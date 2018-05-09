@@ -137,6 +137,10 @@ namespace NArctic
             {
                 return Series<int>.FromBuffer(buf, buftype, iheight, icol);
             }
+            else if (buftype.Fields[icol].Type == typeof(bool))
+            {
+                return Series<bool>.FromBuffer(buf, buftype, iheight, icol);
+            }
             else if (buftype.Fields[icol].Type == typeof(string))
             {
                 return StringSeries.FromBuffer(buf, buftype, iheight, icol);

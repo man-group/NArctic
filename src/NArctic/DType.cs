@@ -260,22 +260,23 @@ namespace NArctic
 				string str = string.Join(DType.sep, Fields.Select(f=>"('{0}','{1}')".Args(f.Name, f)));
 				return "[" + str + "]";
 			} else {
-                if (Type == typeof(double))
-                    return "<f8";
-                else if (Type == typeof(long))
-                    return "<i8";
-                else if (Type == typeof(int))
-                    return "<i4";
-                else if (Type == typeof(DateTime))
-                    return "<M8[ns]";
-                else if (Type == typeof(bool))
-                    return "?";
+                if (Type == typeof(double)) { return "<f8"; }
+                else if (Type == typeof(long)) { return "<i8"; }
+                else if (Type == typeof(int)) { return "<i4"; }
+                else if (Type == typeof(DateTime)) { return "<M8[ns]"; }
+                else if (Type == typeof(bool)) { return "?"; }
                 else if (Type == typeof(string) && EncodingStyle == Encoding.UTF8)
+                {
                     return $"{ToString(Endian)}S{Size}";
+                }
                 else if (Type == typeof(string) && EncodingStyle == Encoding.UTF32)
+                {
                     return $"{ToString(Endian)}U{Size}";
+                }
                 else
+                {
                     throw new InvalidOperationException("unknown numpy dtype '{0}'".Args(Type));
+                }
 			}
 				
 		}

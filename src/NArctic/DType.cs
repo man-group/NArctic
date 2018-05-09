@@ -265,13 +265,24 @@ namespace NArctic
                 else if (Type == typeof(int)) { return "<i4"; }
                 else if (Type == typeof(DateTime)) { return "<M8[ns]"; }
                 else if (Type == typeof(bool)) { return "?"; }
-                else if (Type == typeof(string) && EncodingStyle == Encoding.UTF8)
+                else if (Type == typeof(string))
                 {
-                    return $"{ToString(Endian)}S{Size}";
-                }
-                else if (Type == typeof(string) && EncodingStyle == Encoding.UTF32)
-                {
-                    return $"{ToString(Endian)}U{Size}";
+                    char encodingChar;
+
+                    if (EncodingStyle == Encoding.UTF8)
+                    {
+                        encodingChar = 'S';
+                    }
+                    else if (EncodingStyle == Encoding.UTF32)
+                    {
+                        encodingChar = 'U';
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException("Unhandled EncodingStyle {1} for numpy dtype '{0}'".Args(Type, EncodingStyle));
+                    }
+
+                    return $"{ToString(Endian)}{encodingChar}{Size}";
                 }
                 else
                 {

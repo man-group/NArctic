@@ -14,7 +14,7 @@ namespace NArctic
 {
 	public static class DateTime64
 	{
-		public static DateTime UnixEpoch = new DateTime(1970,01,01);
+		public readonly static DateTime UnixEpoch = new DateTime(1970,01,01);
 
 		public static DateTime ToDateTime(long ns)
 		{
@@ -39,51 +39,79 @@ namespace NArctic
         public static Func<DateTime, long> TimeGrouping(string freq)
         {
             if (freq == Years)
+            {
                 return dt => dt.Year - UnixEpoch.Year;
+            }
             else if (freq == Months)
+            {
                 return dt => (dt.Year - UnixEpoch.Year) * 12 + (dt.Month - UnixEpoch.Month);
+            }
             else if (freq == Days)
+            {
                 return dt => (long)(dt - UnixEpoch).TotalDays;
-            else if(freq == Seconds)
+            }
+            else if (freq == Seconds)
+            {
                 return dt => (long)(dt - UnixEpoch).TotalSeconds;
+            }
             else if (freq == Milliseconds)
-                return dt => (dt - UnixEpoch).Ticks/10000;
+            {
+                return dt => (dt - UnixEpoch).Ticks / 10000;
+            }
             throw new ArgumentException(freq);
         }
 
-        public static string Months = "M";
-        public static string Years = "Y";
-        public static string Days = "D";
-        public static string Hours = "h";
-        public static string Minutes = "m";
-        public static string Seconds = "s";
-        public static string Milliseconds = "f";
+        private const string Months = "M";
+        private const string Years = "Y";
+        private const string Days = "D";
+        private const string Hours = "h";
+        private const string Minutes = "m";
+        private const string Seconds = "s";
+        private const string Milliseconds = "f";
 
         public static TimeSpan TimeFreq(string freq)
         {
             if (freq == Years)
+            {
                 return TimeSpan.FromDays(366);
+            }
             else if (freq == Months)
+            {
                 return TimeSpan.FromDays(31);
+            }
             else if (freq == Days)
+            {
                 return TimeSpan.FromDays(1);
+            }
             else if (freq == Seconds)
+            {
                 return TimeSpan.FromSeconds(1);
+            }
             else if (freq == Milliseconds)
+            {
                 return TimeSpan.FromTicks(10000);
+            }
             throw new ArgumentException(freq);
         }
 
         public static string ToTimeFrameString(this TimeSpan tf)
         {
             if (tf < TimeSpan.FromSeconds(1))
+            {
                 return "u{0}".Args(tf.Ticks / TimeSpan.FromMilliseconds(1).Ticks);
-            if (tf <  TimeSpan.FromMinutes(1))
+            }
+            if (tf < TimeSpan.FromMinutes(1))
+            {
                 return "s{0}".Args(tf.Ticks / TimeSpan.FromSeconds(1).Ticks);
+            }
             if (tf < TimeSpan.FromHours(1))
+            {
                 return "m{0}".Args(tf.Ticks / TimeSpan.FromMinutes(1).Ticks);
+            }
             if (tf < TimeSpan.FromDays(1))
+            {
                 return "H{0}".Args(tf.Ticks / TimeSpan.FromHours(1).Ticks);
+            }
             return "D{0}".Args(tf.Ticks / TimeSpan.FromDays(1).Ticks);
         }
 
@@ -93,22 +121,31 @@ namespace NArctic
 
 	public class DType
 	{
-		public Type Type;
-		public List<DType> Fields = new List<DType>();
-		public DType Parent;
-		public string Name;
-		public int Size;
-        public EndianType Endian = EndianType.Native;
-        public Encoding EncodingStyle;
-		public string Format = null;
-		public static Dictionary<Type,string> Formats = new Dictionary<Type,string> ();
-		public static string sep = ", ";
+        private Type type;
+        private List<DType> fields = new List<DType>();
+        private DType parent;
+        public string Name;
+        private int size;
+        private EndianType endian = EndianType.Native;
+        private Encoding encodingStyle;
+        private string format = null;
+        private static Dictionary<Type, string> formats = new Dictionary<Type, string>();
+        public const string sep = ", ";
 	 
 		public static DType DateTime64 { get { return new DType("'<M8[ns]'"); } }
 		public static DType Long { get { return new DType("'<i8'"); } }
         public static DType Int { get { return new DType("'<i4'"); } } 
         public static DType Double { get { return new DType("'<f8'"); } }
         public static DType Bool { get { return new DType("'?'"); } }
+
+        public Type Type { get => type; set => type = value; }
+        public List<DType> Fields { get => fields; set => fields = value; }
+        public DType Parent { get => parent; set => parent = value; }
+        public int Size { get => size; set => size = value; }
+        public EndianType Endian { get => endian; set => endian = value; }
+        public Encoding EncodingStyle { get => encodingStyle; set => encodingStyle = value; }
+        public string Format { get => format; set => format = value; }
+        public static Dictionary<Type, string> Formats { get => formats; set => formats = value; }
 
         static DType()
 		{
@@ -147,8 +184,10 @@ namespace NArctic
 		public int FieldOffset(int ifield)
 		{
 			int offset = 0;
-			for (int i = 0; i < ifield; i++)
-				offset += Fields [i].Size;
+            for (int i = 0; i < ifield; i++)
+            {
+                offset += Fields[i].Size;
+            }
 			return offset;
 		}
 

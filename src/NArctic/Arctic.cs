@@ -19,11 +19,16 @@ namespace NArctic
         {
             get; set;
         }
-		protected IMongoCollection<BsonDocument> _versions;
+        protected IMongoCollection<BsonDocument> _versions;
 		protected IMongoCollection<BsonDocument> _segments;
 		protected IMongoCollection<BsonDocument> _version_numbers;
 
         public string Name;
+        public string Type;
+
+        public Arctic(MongoClient mongo, string database, string lib)
+            :this(mongo, string.Concat(database, '.', lib))
+        { }
 
 		public Arctic(MongoClient mongo, string lib)
 		{
@@ -33,14 +38,24 @@ namespace NArctic
             this.Db = mongo.GetDatabase(db);
             var name = items[1];
             Console.WriteLine("Connected mongo lib='{0}' db='{1}'".Args(lib, db));
-			this._versions = Db.GetCollection<BsonDocument>(name+".versions");
+            this._versions = Db.GetCollection<BsonDocument>(name+".versions");
 			this._segments = Db.GetCollection<BsonDocument>(name);
 			this._version_numbers = Db.GetCollection<BsonDocument> (name+".version_nums");
+
+            var meta = Db.GetCollection<BsonDocument>(name + ".MONGOOSE");
+            IAsyncCursorSource<BsonDocument> metas = meta.AsQueryable()
+                .Where(x => x["_id"] == "MONGOOSE_META");
+            var firstMeta = metas.FirstOrDefault();
+            if (firstMeta.TryGetValue("TYPE", out BsonValue value))
+                Type = value.ToString();
+
             this.Name = db;
 		}
 
         public List<Tuple<DateTime,long>> GetSegmentsIndex(BsonDocument version)
         {
+            CheckSupport();
+
             if (!version.Contains("segment_index"))
                 return null;
 
@@ -64,6 +79,7 @@ namespace NArctic
 
         public async Task<BsonDocument> ReadVersionAsync(string symbol)
 		{
+            CheckSupport();
 #if LOG
             Log.Debug("reading {symbol} version", symbol);
 #endif
@@ -80,16 +96,18 @@ namespace NArctic
 
         public DataFrame Read(string symbol, DateRange daterange=null, BsonDocument version=null)
         {
-            return this.ReadAsync(symbol, daterange, version).Result;
+            return ReadAsync(symbol, daterange, version).Result;
         }
 
         
         public async Task<DataFrame> ReadAsync(string symbol, DateRange range=null, BsonDocument version=null)
 		{
-			version = version ?? await ReadVersionAsync(symbol);
+            version = version ?? await ReadVersionAsync(symbol);
 
             if (version == null)
 				return null;
+
+            CheckSupport(symbol, version);
 #if LOG
             Log.Debug("version: {0}".Args(version));
 #endif
@@ -175,12 +193,14 @@ namespace NArctic
 
         public long Delete(string symbol)
         {
+            CheckSupport();
             return DeleteAsync(symbol).Result;
         }
 
 		public async Task<long> DeleteAsync(string symbol)
 		{
-			var rtn = await _segments.DeleteManyAsync (BF.Eq ("symbol", symbol));
+            CheckSupport();
+            var rtn = await _segments.DeleteManyAsync (BF.Eq ("symbol", symbol));
 			//Log.Information ("Deleted {count} segments for {symbol}", rtn.DeletedCount, symbol);
 			rtn = await _versions.DeleteManyAsync (BF.Eq ("symbol", symbol));
 			//Log.Information ("Deleted {count} versions for {symbol}", rtn.DeletedCount, symbol);
@@ -199,7 +219,9 @@ namespace NArctic
             if (df.Index == null)
                 throw new ArgumentException("Please specify DataFrame.Index column before saving");
 
-            if(chunksize>0 && df.Rows.Count>chunksize)
+            CheckSupport();
+
+            if (chunksize>0 && df.Rows.Count>chunksize)
             {
                 var rng = Range.R(0, chunksize);
                 BsonDocument ver = null;
@@ -365,7 +387,9 @@ namespace NArctic
 
 		public async Task<BsonDocument> GetNewVersion(string symbol, BsonDocument version=null)
 		{
-			version = version ?? new BsonDocument ();
+            CheckSupport();
+
+            version = version ?? new BsonDocument ();
 
 			var version_num = await _version_numbers.FindOneAndUpdateAsync (
 				                       	BF.Eq ("symbol", symbol),
@@ -409,6 +433,28 @@ namespace NArctic
         }
 
         public static FilterDefinitionBuilder<BsonDocument> Filter = Builders<BsonDocument>.Filter;
+
+        private bool IsVersionStore
+        {
+            get { return Type == "VersionStore"; }
+        }
+
+        private void CheckSupport()
+        {
+            if(!IsVersionStore)
+                throw new InvalidOperationException("Type '{0}' is not supported".Args(Type));
+        }
+
+        private void CheckSupport(string symbol, BsonDocument version)
+        {
+            CheckSupport();
+
+            if (!version.TryGetValue("type", out BsonValue type))
+                throw new InvalidOperationException("Symbol '{0}' version does not contain a field called type".Args(symbol));
+
+            if (type.ToString() == "default")
+                throw new InvalidOperationException("Symbol '{0}' contains a pickle, not supported".Args(symbol));
+        }
 	}
 }
 
